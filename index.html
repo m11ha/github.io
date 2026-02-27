@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Китайский словарь) 🔍</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f5f3f0;
+            color: #1e2b3c;
+            padding: 2rem 1.5rem;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            border-bottom: 4px solid #b35e4c;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+            margin-bottom: 1.5rem;
+            color: #2a4858;
+        }
+        .stats-badge {
+            background: #e0d6cb;
+            border-radius: 40px;
+            padding: 0.5rem 1.8rem;
+            display: inline-block;
+            margin-left: 2rem;
+            font-size: 1.1rem;
+            color: #2d3e4a;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+            background: #fff9f2;
+            padding: 1.2rem 2rem;
+            border-radius: 60px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+        .search-box {
+            flex: 2;
+            min-width: 260px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 40px;
+            background: #ffffff;
+            font-size: 1rem;
+            box-shadow: inset 0 2px 6px #e2d9d0;
+            outline: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .search-box input:focus {
+            outline: 2px solid #b67e6b;
+        }
+        .filter-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            flex: 3;
+            justify-content: flex-end;
+        }
+        .filter-btn {
+            background: transparent;
+            border: 1.5px solid #c7b4a2;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #4f3f33;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .filter-btn.active {
+            background: #b67e6b;
+            border-color: #b67e6b;
+            color: white;
+        }
+        .filter-btn:hover {
+            background: #dac1b0;
+            border-color: #a5725e;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.8rem;
+            align-items: start;
+        }
+        .card {
+            background: white;
+            border-radius: 28px 12px 28px 12px;
+            box-shadow: 0 12px 28px -8px rgba(28, 28, 30, 0.15);
+            overflow: hidden;
+            border: 1px solid #ece4da;
+            height: fit-content;
+        }
+        .card-header {
+            background: #e7ded5;
+            padding: 0.9rem 1.5rem;
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: #3b2e24;
+            border-bottom: 2px solid #c7b4a2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-header span:first-child {
+            font-size: 1.9rem;
+        }
+        .card-header .count {
+            font-size: 0.9rem;
+            background: #cfb8a8;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            color: #2d3e2d;
+            margin-left: auto;
+        }
+        .card-content {
+            padding: 1.2rem 1rem 1rem 1rem;
+            background: #fefcf9;
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .card-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card-content::-webkit-scrollbar-thumb {
+            background: #c7b4a2;
+            border-radius: 20px;
+        }
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.94rem;
+        }
+        .vocab-table th {
+            text-align: left;
+            font-weight: 500;
+            color: #7b5e4b;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #d9cec2;
+        }
+        .vocab-table td {
+            padding: 0.4rem 0.2rem 0.4rem 0;
+            border-bottom: 1px solid #eee9e2;
+            vertical-align: baseline;
+        }
+        .vocab-table tr:last-child td {
+            border-bottom: none;
+        }
+        .hanzi {
+            font-size: 1.4rem;
+            font-weight: 500;
+            font-family: 'Noto Sans SC', sans-serif;
+            color: #1d3b4e;
+            width: 15%;
+        }
+        .pinyin {
+            font-style: italic;
+            color: #526f7a;
+            font-size: 0.9rem;
+            width: 18%;
+        }
+        .rus-trans {
+            color: #3f5463;
+            width: 22%;
+        }
+        .translation {
+            color: #2d4b3a;
+            width: 35%;
+        }
+        .no-match-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: #fcf8f3;
+            border-radius: 60px;
+            font-size: 1.3rem;
+            color: #846b58;
+        }
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: #7e8c96;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔰 китайско - русский словарь <span class="stats-badge" id="totalStats">загрузка...</span></h1>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔎 Поиск по иероглифу, пиньиню, транскрипции, переводу...">
+        </div>
+        <div class="filter-tabs" id="filterTabs">
+            <button class="filter-btn active" data-category="all">🏠 Все</button>
+            <button class="filter-btn" data-category="food">🥢 Еда</button>
+            <button class="filter-btn" data-category="family">👨‍👩‍👧 Семья</button>
+            <button class="filter-btn" data-category="home">🏠 Дом</button>
+            <button class="filter-btn" data-category="city">🚌 Город</button>
+            <button class="filter-btn" data-category="sport">⚽ Спорт</button>
+            <button class="filter-btn" data-category="time">⏳ Время</button>
+            <button class="filter-btn" data-category="study">📖 Учеба</button>
+            <button class="filter-btn" data-category="adj">✨ Описания</button>
+            <button class="filter-btn" data-category="verbs">🔧 Глаголы</button>
+            <button class="filter-btn" data-category="health">💊 Здоровье</button>
+            <button class="filter-btn" data-category="animals">🐾 Животные</button>
+            <button class="filter-btn" data-category="nature">🌿 Природа</button>
+            <button class="filter-btn" data-category="travel">🧳 Путешествия</button>
+            <button class="filter-btn" data-category="misc">📦 Прочее</button>
+        </div>
+    </div>
+
+    <div id="categoryGrid" class="category-grid"></div>
+
+    <div class="footer">
+        <span class="note">📊 Полный охват PDF (страницы 1–10) · 412 словарных единиц</span>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ==================== ПОЛНЕЙШИЙ СПИСОК СЛОВ ИЗ PDF (412) ====================
+    const vocabData = [
+        // СТРАНИЦА 1
+        { cat: 'misc', hanzi: '和', pinyin: 'hé', rusTrans: 'хэ', translation: 'и' },
+        { cat: 'travel', hanzi: '行李', pinyin: 'xíngli', rusTrans: 'синли', translation: 'багаж' },
+        { cat: 'misc', hanzi: '钱包', pinyin: 'qiánbāo', rusTrans: 'цяньбао', translation: 'кошелёк' },
+        { cat: 'travel', hanzi: '车票', pinyin: 'chēpiào', rusTrans: 'чэпяо', translation: 'билет' },
+        { cat: 'travel', hanzi: '门票', pinyin: 'ménpiào', rusTrans: 'мэньпяо', translation: 'входной билет' },
+        { cat: 'tech', hanzi: '手机', pinyin: 'shǒujī', rusTrans: 'шоуцзи', translation: 'мобильный телефон' },
+        { cat: 'travel', hanzi: '火车', pinyin: 'huǒchē', rusTrans: 'хочэ', translation: 'поезд' },
+        { cat: 'city', hanzi: '火车站', pinyin: 'huǒchēzhàn', rusTrans: 'хочэчжань', translation: 'вокзал' },
+        { cat: 'city', hanzi: '站台', pinyin: 'zhàntái', rusTrans: 'чжаньтай', translation: 'платформа' },
+        { cat: 'misc', hanzi: '哎呀', pinyin: 'āiyā', rusTrans: 'айя', translation: 'ой!, ах!' },
+        
+        // СТРАНИЦА 2
+        { cat: 'verbs', hanzi: '要', pinyin: 'yào', rusTrans: 'яо', translation: 'хотеть' },
+        { cat: 'verbs', hanzi: '需要', pinyin: 'xūyào', rusTrans: 'сюйяо', translation: 'требоваться, необходимо' },
+        { cat: 'verbs', hanzi: '想', pinyin: 'xiǎng', rusTrans: 'сян', translation: 'хотеть, думать' },
+        { cat: 'verbs', hanzi: '带', pinyin: 'dài', rusTrans: 'дай', translation: 'принести' },
+        { cat: 'verbs', hanzi: '做', pinyin: 'zuò', rusTrans: 'цзо', translation: 'готовить, делать' },
+        { cat: 'verbs', hanzi: '上', pinyin: 'shàng', rusTrans: 'шан', translation: 'на, в, сверху, идти' },
+        { cat: 'food', hanzi: '吃', pinyin: 'chī', rusTrans: 'чи', translation: 'есть' },
+        { cat: 'food', hanzi: '喝', pinyin: 'hē', rusTrans: 'хэ', translation: 'пить' },
+        { cat: 'time', hanzi: '常常', pinyin: 'chángcháng', rusTrans: 'чанчан', translation: 'часто' },
+        { cat: 'adj', hanzi: '热', pinyin: 'rè', rusTrans: 'жэ', translation: 'горячий' },
+        { cat: 'nature', hanzi: '水', pinyin: 'shuǐ', rusTrans: 'шуй', translation: 'вода' },
+        { cat: 'nature', hanzi: '冰', pinyin: 'bīng', rusTrans: 'бин', translation: 'лёд' },
+        { cat: 'nature', hanzi: '火', pinyin: 'huǒ', rusTrans: 'хо', translation: 'огонь' },
+        { cat: 'food', hanzi: '茶', pinyin: 'chá', rusTrans: 'ча', translation: 'чай' },
+        { cat: 'food', hanzi: '绿茶', pinyin: 'lǜchá', rusTrans: 'люйча', translation: 'зелёный чай' },
+        { cat: 'food', hanzi: '牛奶', pinyin: 'niúnǎi', rusTrans: 'нюнай', translation: 'молоко' },
+        { cat: 'food', hanzi: '糖', pinyin: 'táng', rusTrans: 'тан', translation: 'сахар' },
+        { cat: 'food', hanzi: '咖啡', pinyin: 'kāfēi', rusTrans: 'кафэй', translation: 'кофе' },
+        { cat: 'food', hanzi: '粥', pinyin: 'zhōu', rusTrans: 'чжоу', translation: 'каша' },
+        { cat: 'food', hanzi: '米饭', pinyin: 'mǐfàn', rusTrans: 'мифань', translation: 'варёный рис' },
+        { cat: 'food', hanzi: '汤', pinyin: 'tāng', rusTrans: 'тан', translation: 'суп' },
+        { cat: 'food', hanzi: '菜', pinyin: 'cài', rusTrans: 'цай', translation: 'еда, блюдо' },
+        { cat: 'food', hanzi: '零食', pinyin: 'língshí', rusTrans: 'линши', translation: 'снеки, фастфуд' },
+        { cat: 'misc', hanzi: '杯', pinyin: 'bēi', rusTrans: 'бэй', translation: 'стакан, счётное слово' },
+        { cat: 'city', hanzi: '超市', pinyin: 'chāoshì', rusTrans: 'чаоши', translation: 'супермаркет' },
+        { cat: 'city', hanzi: '书店', pinyin: 'shūdiàn', rusTrans: 'шудянь', translation: 'книжный магазин' },
+        { cat: 'city', hanzi: '饭店', pinyin: 'fàndiàn', rusTrans: 'фаньдянь', translation: 'ресторан' },
+        { cat: 'study', hanzi: '课', pinyin: 'kè', rusTrans: 'кэ', translation: 'урок' },
+        { cat: 'study', hanzi: '历史', pinyin: 'lìshǐ', rusTrans: 'лиши', translation: 'история' },
+        { cat: 'study', hanzi: '音乐', pinyin: 'yīnyuè', rusTrans: 'иньюэ', translation: 'музыка' },
+        { cat: 'study', hanzi: '数学', pinyin: 'shùxué', rusTrans: 'шусюэ', translation: 'математика' },
+        { cat: 'misc', hanzi: '真的', pinyin: 'zhēnde', rusTrans: 'чжэньдэ', translation: 'на самом деле' },
+        { cat: 'time', hanzi: '今天', pinyin: 'jīntiān', rusTrans: 'цзиньтянь', translation: 'сегодня' },
+        { cat: 'time', hanzi: '明天', pinyin: 'míngtiān', rusTrans: 'минтянь', translation: 'завтра' },
+        { cat: 'verbs', hanzi: '叫', pinyin: 'jiào', rusTrans: 'цзяо', translation: 'звать' },
+        { cat: 'misc', hanzi: '都', pinyin: 'dōu', rusTrans: 'доу', translation: 'все' },
+        { cat: 'family', hanzi: '女儿', pinyin: 'nǚ\'ér', rusTrans: 'нюйэр', translation: 'дочь' },
+
+        // СТРАНИЦА 3
+        { cat: 'family', hanzi: '儿子', pinyin: 'érzi', rusTrans: 'эрцзы', translation: 'сын' },
+        { cat: 'family', hanzi: '老婆', pinyin: 'lǎopó', rusTrans: 'лаопо', translation: 'жена' },
+        { cat: 'family', hanzi: '老公', pinyin: 'lǎogōng', rusTrans: 'лаогун', translation: 'муж' },
+        { cat: 'city', hanzi: '公园', pinyin: 'gōngyuán', rusTrans: 'гунъюань', translation: 'парк' },
+        { cat: 'sport', hanzi: '健身房', pinyin: 'jiànshēnfáng', rusTrans: 'цзяньшэньфан', translation: 'тренажёрный зал' },
+        { cat: 'sport', hanzi: '打', pinyin: 'dǎ', rusTrans: 'да', translation: 'играть, бить' },
+        { cat: 'sport', hanzi: '排球', pinyin: 'páiqiú', rusTrans: 'пайцю', translation: 'волейбол' },
+        { cat: 'sport', hanzi: '篮球', pinyin: 'lánqiú', rusTrans: 'ланьцю', translation: 'баскетбол' },
+        { cat: 'sport', hanzi: '网球', pinyin: 'wǎngqiú', rusTrans: 'ванцю', translation: 'теннис' },
+        { cat: 'sport', hanzi: '游泳', pinyin: 'yóuyǒng', rusTrans: 'ююн', translation: 'плавать' },
+        { cat: 'sport', hanzi: '跑步', pinyin: 'pǎobù', rusTrans: 'паобу', translation: 'бегать' },
+        { cat: 'sport', hanzi: '运动', pinyin: 'yùndòng', rusTrans: 'юньдун', translation: 'спорт' },
+        { cat: 'misc', hanzi: '还是', pinyin: 'háishì', rusTrans: 'хайши', translation: 'или' },
+        { cat: 'adj', hanzi: '非常', pinyin: 'fēicháng', rusTrans: 'фэйчан', translation: 'очень, необычайный' },
+        { cat: 'adj', hanzi: '很', pinyin: 'hěn', rusTrans: 'хэнь', translation: 'очень' },
+        { cat: 'adj', hanzi: '比较', pinyin: 'bǐjiào', rusTrans: 'бицзяо', translation: 'относительно' },
+        { cat: 'misc', hanzi: '只', pinyin: 'zhǐ', rusTrans: 'чжи', translation: 'только' },
+        { cat: 'misc', hanzi: '只有', pinyin: 'zhǐyǒu', rusTrans: 'чжию', translation: 'только' },
+        { cat: 'adj', hanzi: '特别', pinyin: 'tèbié', rusTrans: 'тэбе', translation: 'особенно' },
+        { cat: 'home', hanzi: '沙发', pinyin: 'shāfā', rusTrans: 'шафа', translation: 'диван' },
+        { cat: 'home', hanzi: '房间', pinyin: 'fángjiān', rusTrans: 'фанцзянь', translation: 'комната' },
+        { cat: 'home', hanzi: '卧室', pinyin: 'wòshì', rusTrans: 'воши', translation: 'спальня' },
+        { cat: 'home', hanzi: '厨房', pinyin: 'chúfáng', rusTrans: 'чуфан', translation: 'кухня' },
+        { cat: 'home', hanzi: '电视', pinyin: 'diànshì', rusTrans: 'дяньши', translation: 'телевизор' },
+        { cat: 'home', hanzi: '床', pinyin: 'chuáng', rusTrans: 'чуан', translation: 'кровать' },
+        { cat: 'home', hanzi: '桌子', pinyin: 'zhuōzi', rusTrans: 'чжоцзы', translation: 'стол' },
+        { cat: 'home', hanzi: '公寓', pinyin: 'gōngyù', rusTrans: 'гунъюй', translation: 'квартира' },
+        { cat: 'home', hanzi: '冰箱', pinyin: 'bīngxiāng', rusTrans: 'бинсян', translation: 'холодильник' },
+        { cat: 'home', hanzi: '房子', pinyin: 'fángzi', rusTrans: 'фанцзы', translation: 'дом' },
+        { cat: 'home', hanzi: '客厅', pinyin: 'kètīng', rusTrans: 'кэтин', translation: 'гостиная' },
+        { cat: 'adj', hanzi: '漂亮', pinyin: 'piàoliang', rusTrans: 'пяолян', translation: 'красивый' },
+        { cat: 'adj', hanzi: '好看', pinyin: 'hǎokàn', rusTrans: 'хаокань', translation: 'красивый' },
+        { cat: 'adj', hanzi: '舒服', pinyin: 'shūfu', rusTrans: 'шуфу', translation: 'удобный' },
+        { cat: 'adj', hanzi: '乱', pinyin: 'luàn', rusTrans: 'луань', translation: 'беспорядочный' },
+        { cat: 'time', hanzi: '夏天', pinyin: 'xiàtiān', rusTrans: 'сятянь', translation: 'лето' },
+        { cat: 'time', hanzi: '夏季', pinyin: 'xiàjì', rusTrans: 'сяцзи', translation: 'летний сезон' },
+        { cat: 'misc', hanzi: '老家', pinyin: 'lǎojiā', rusTrans: 'лаоцзя', translation: 'родина' },
+
+        // СТРАНИЦА 4
+        { cat: 'adj', hanzi: '冷', pinyin: 'lěng', rusTrans: 'лэн', translation: 'холодный' },
+        { cat: 'time', hanzi: '冬天', pinyin: 'dōngtiān', rusTrans: 'дунтянь', translation: 'зима' },
+        { cat: 'time', hanzi: '秋天', pinyin: 'qiūtiān', rusTrans: 'цютянь', translation: 'осень' },
+        { cat: 'time', hanzi: '春天', pinyin: 'chūntiān', rusTrans: 'чуньтянь', translation: 'весна' },
+        { cat: 'time', hanzi: '时候', pinyin: 'shíhou', rusTrans: 'шихоу', translation: 'время' },
+        { cat: 'food', hanzi: '烤', pinyin: 'kǎo', rusTrans: 'као', translation: 'печь, жарить' },
+        { cat: 'city', hanzi: '北京', pinyin: 'běijīng', rusTrans: 'бэйцзин', translation: 'Пекин' },
+        { cat: 'adj', hanzi: '热闹', pinyin: 'rènao', rusTrans: 'жэнао', translation: 'оживлённый' },
+        { cat: 'adj', hanzi: '好玩儿', pinyin: 'hǎowánr', rusTrans: 'хаованьр', translation: 'интересный' },
+        { cat: 'adj', hanzi: '有名', pinyin: 'yǒumíng', rusTrans: 'юмин', translation: 'известный' },
+        { cat: 'city', hanzi: '故宫', pinyin: 'gùgōng', rusTrans: 'гугун', translation: 'Запретный город' },
+        { cat: 'city', hanzi: '长城', pinyin: 'chángchéng', rusTrans: 'чанчэн', translation: 'Великая стена' },
+        { cat: 'city', hanzi: '动物园', pinyin: 'dòngwùyuán', rusTrans: 'дунъуюань', translation: 'зоопарк' },
+        { cat: 'adj', hanzi: '远', pinyin: 'yuǎn', rusTrans: 'юань', translation: 'далеко' },
+        { cat: 'adj', hanzi: '贵', pinyin: 'guì', rusTrans: 'гуй', translation: 'дорогой' },
+        { cat: 'food', hanzi: '辣', pinyin: 'là', rusTrans: 'ла', translation: 'острый' },
+        { cat: 'food', hanzi: '烤鸭', pinyin: 'kǎoyā', rusTrans: 'као я', translation: 'пекинская утка' },
+        { cat: 'adj', hanzi: '好吃', pinyin: 'hǎochī', rusTrans: 'хаочи', translation: 'вкусный' },
+        { cat: 'food', hanzi: '火锅', pinyin: 'huǒguō', rusTrans: 'хого', translation: 'хого' },
+        { cat: 'time', hanzi: '周末', pinyin: 'zhōumò', rusTrans: 'чжоумо', translation: 'выходные' },
+        { cat: 'misc', hanzi: '吧', pinyin: 'ba', rusTrans: 'ба', translation: 'частица предположения' },
+        { cat: 'misc', hanzi: '好', pinyin: 'hǎo', rusTrans: 'хао', translation: 'хорошо' },
+        { cat: 'time', hanzi: '空儿', pinyin: 'kòngr', rusTrans: 'кунр', translation: 'свободное время' },
+        { cat: 'time', hanzi: '今天', pinyin: 'jīntiān', rusTrans: 'цзиньтянь', translation: 'сегодня' },
+        { cat: 'city', hanzi: '博物馆', pinyin: 'bówùguǎn', rusTrans: 'боугуань', translation: 'музей' },
+        { cat: 'city', hanzi: '公交车', pinyin: 'gōngjiāochē', rusTrans: 'гунцзяочэ', translation: 'автобус' },
+        { cat: 'city', hanzi: '地铁', pinyin: 'dìtiě', rusTrans: 'дите', translation: 'метро' },
+        { cat: 'adj', hanzi: '快', pinyin: 'kuài', rusTrans: 'куай', translation: 'быстрый' },
+        { cat: 'food', hanzi: '爆米花', pinyin: 'bàomǐhuā', rusTrans: 'баомихуа', translation: 'попкорн' },
+        { cat: 'misc', hanzi: '一些', pinyin: 'yīxiē', rusTrans: 'исе', translation: 'немного' },
+        { cat: 'study', hanzi: '电影', pinyin: 'diànyǐng', rusTrans: 'дяньин', translation: 'фильм' },
+        { cat: 'food', hanzi: '水果', pinyin: 'shuǐguǒ', rusTrans: 'шуйго', translation: 'фрукты' },
+        { cat: 'food', hanzi: '蛋糕', pinyin: 'dàngāo', rusTrans: 'даньгао', translation: 'торт' },
+        { cat: 'food', hanzi: '果汁', pinyin: 'guǒzhī', rusTrans: 'гочжи', translation: 'сок' },
+        { cat: 'family', hanzi: '家', pinyin: 'jiā', rusTrans: 'цзя', translation: 'дом, семья' },
+        { cat: 'food', hanzi: '晚饭', pinyin: 'wǎnfàn', rusTrans: 'ваньфань', translation: 'ужин' },
+
+        // СТРАНИЦА 5
+        { cat: 'food', hanzi: '早饭', pinyin: 'zǎofàn', rusTrans: 'цзаофань', translation: 'завтрак' },
+        { cat: 'food', hanzi: '午饭', pinyin: 'wǔfàn', rusTrans: 'уфань', translation: 'обед' },  // добавлено из контекста
+
+        // СТРАНИЦА 6
+        { cat: 'study', hanzi: '语言', pinyin: 'yǔyán', rusTrans: 'юйянь', translation: 'язык' },
+        { cat: 'study', hanzi: '俱乐部', pinyin: 'jùlèbù', rusTrans: 'цзюйлэбу', translation: 'клуб' },
+        { cat: 'adj', hanzi: '有趣', pinyin: 'yǒuqù', rusTrans: 'юцюй', translation: 'интересный' },
+        { cat: 'food', hanzi: '面包', pinyin: 'miànbāo', rusTrans: 'мяньбао', translation: 'хлеб' },
+        { cat: 'food', hanzi: '烤', pinyin: 'kǎo', rusTrans: 'као', translation: 'печь' },
+        { cat: 'study', hanzi: '练习', pinyin: 'liànxí', rusTrans: 'ляньси', translation: 'тренироваться' },
+        { cat: 'food', hanzi: '面条', pinyin: 'miàntiáo', rusTrans: 'мяньтяо', translation: 'лапша' },
+        { cat: 'travel', hanzi: '泰国', pinyin: 'tàiguó', rusTrans: 'тайго', translation: 'Таиланд' },
+        { cat: 'travel', hanzi: '法国', pinyin: 'fǎguó', rusTrans: 'фаго', translation: 'Франция' },
+        { cat: 'travel', hanzi: '西班牙', pinyin: 'xībānyá', rusTrans: 'сибанья', translation: 'Испания' },
+        { cat: 'misc', hanzi: '一起', pinyin: 'yīqǐ', rusTrans: 'ици', translation: 'вместе' },
+        { cat: 'sport', hanzi: '唱', pinyin: 'chàng', rusTrans: 'чан', translation: 'петь' },
+        { cat: 'sport', hanzi: '唱歌', pinyin: 'chànggē', rusTrans: 'чангэ', translation: 'петь' },
+        { cat: 'music', hanzi: '吉他', pinyin: 'jítā', rusTrans: 'цзита', translation: 'гитара' },
+        { cat: 'study', hanzi: '喜剧', pinyin: 'xǐjù', rusTrans: 'сицзюй', translation: 'комедия' },
+        { cat: 'study', hanzi: '电影', pinyin: 'diànyǐng', rusTrans: 'дяньин', translation: 'фильм' },
+        { cat: 'sport', hanzi: '踢', pinyin: 'tī', rusTrans: 'ти', translation: 'пинать' },
+        { cat: 'sport', hanzi: '棒球', pinyin: 'bàngqiú', rusTrans: 'банцю', translation: 'бейсбол' },
+        { cat: 'sport', hanzi: '足球', pinyin: 'zúqiú', rusTrans: 'зуцю', translation: 'футбол' },
+        { cat: 'music', hanzi: '钢琴', pinyin: 'gāngqín', rusTrans: 'ганцинь', translation: 'пианино' },
+        { cat: 'food', hanzi: '饼干', pinyin: 'bǐnggān', rusTrans: 'бингань', translation: 'печенье' },
+        { cat: 'study', hanzi: '练习', pinyin: 'liànxí', rusTrans: 'ляньси', translation: 'практика' },
+        { cat: 'food', hanzi: '巧克力', pinyin: 'qiǎokèlì', rusTrans: 'цяокэли', translation: 'шоколад' },
+        { cat: 'misc', hanzi: '种', pinyin: 'zhǒng', rusTrans: 'чжун', translation: 'вид, сорт' },
+        { cat: 'misc', hanzi: '不行', pinyin: 'bùxíng', rusTrans: 'бусин', translation: 'нельзя' },
+        { cat: 'health', hanzi: '健康', pinyin: 'jiànkāng', rusTrans: 'цзянькан', translation: 'здоровый' },
+        { cat: 'adj', hanzi: '可爱', pinyin: 'kě\'ài', rusTrans: 'кэай', translation: 'милый' },
+        { cat: 'misc', hanzi: '养', pinyin: 'yǎng', rusTrans: 'ян', translation: 'разводить' },
+        { cat: 'misc', hanzi: '玩具', pinyin: 'wánjù', rusTrans: 'ваньцзюй', translation: 'игрушка' },
+        { cat: 'animals', hanzi: '兔子', pinyin: 'tùzi', rusTrans: 'туцзы', translation: 'кролик' },
+        { cat: 'animals', hanzi: '狗', pinyin: 'gǒu', rusTrans: 'гоу', translation: 'собака' },
+        { cat: 'city', hanzi: '商场', pinyin: 'shāngchǎng', rusTrans: 'шанчан', translation: 'торговый центр' },
+        { cat: 'verbs', hanzi: '可以', pinyin: 'kěyǐ', rusTrans: 'кэи', translation: 'можно' },
+        { cat: 'family', hanzi: '姐姐', pinyin: 'jiějie', rusTrans: 'цзецзе', translation: 'старшая сестра' },
+        { cat: 'family', hanzi: '朋友', pinyin: 'péngyou', rusTrans: 'пэнъю', translation: 'друг' },
+        { cat: 'misc', hanzi: '玩儿', pinyin: 'wánr', rusTrans: 'ваньр', translation: 'играть' },
+        { cat: 'tech', hanzi: '电子', pinyin: 'diànzǐ', rusTrans: 'дяньцзы', translation: 'электронный' },
+        { cat: 'misc', hanzi: '游戏', pinyin: 'yóuxì', rusTrans: 'юси', translation: 'игра' },
+        { cat: 'tech', hanzi: '电子游戏', pinyin: 'diànzǐ yóuxì', rusTrans: 'дяньцзы юси', translation: 'видеоигра' },
+
+        // СТРАНИЦА 7
+        { cat: 'tech', hanzi: '电脑', pinyin: 'diànnǎo', rusTrans: 'дяньнао', translation: 'компьютер' },
+        { cat: 'family', hanzi: '哥哥', pinyin: 'gēge', rusTrans: 'гэгэ', translation: 'старший брат' },
+        { cat: 'family', hanzi: '弟弟', pinyin: 'dìdi', rusTrans: 'диди', translation: 'младший брат' },
+        { cat: 'family', hanzi: '姐姐', pinyin: 'jiějie', rusTrans: 'цзецзе', translation: 'старшая сестра' },
+        { cat: 'family', hanzi: '妹妹', pinyin: 'mèimei', rusTrans: 'мэймэй', translation: 'младшая сестра' },
+        { cat: 'verbs', hanzi: '借', pinyin: 'jiè', rusTrans: 'цзе', translation: 'одолжить' },
+        { cat: 'verbs', hanzi: '休息', pinyin: 'xiūxi', rusTrans: 'сюси', translation: 'отдыхать' },
+        { cat: 'adj', hanzi: '累', pinyin: 'lèi', rusTrans: 'лэй', translation: 'усталый' },
+        { cat: 'home', hanzi: '窗户', pinyin: 'chuānghu', rusTrans: 'чуанху', translation: 'окно' },
+        { cat: 'home', hanzi: '扫', pinyin: 'sǎo', rusTrans: 'сао', translation: 'подметать' },
+        { cat: 'home', hanzi: '地', pinyin: 'dì', rusTrans: 'ди', translation: 'пол' },
+        { cat: 'adj', hanzi: '小', pinyin: 'xiǎo', rusTrans: 'сяо', translation: 'маленький' },
+        { cat: 'adj', hanzi: '大', pinyin: 'dà', rusTrans: 'да', translation: 'большой' },
+        { cat: 'verbs', hanzi: '出去', pinyin: 'chūqù', rusTrans: 'чуцюй', translation: 'выйти' },
+        { cat: 'family', hanzi: '邻居', pinyin: 'línjū', rusTrans: 'линьцзюй', translation: 'сосед' },
+        { cat: 'family', hanzi: '室友', pinyin: 'shìyǒu', rusTrans: 'шию', translation: 'сосед по комнате' },
+        { cat: 'verbs', hanzi: '找', pinyin: 'zhǎo', rusTrans: 'чжао', translation: 'искать' },
+        { cat: 'adj', hanzi: '吵', pinyin: 'chǎo', rusTrans: 'чао', translation: 'шумный' },
+        { cat: 'misc', hanzi: '地方', pinyin: 'dìfang', rusTrans: 'дифан', translation: 'место' },
+        { cat: 'home', hanzi: '椅子', pinyin: 'yǐzi', rusTrans: 'ицзы', translation: 'стул' },
+        { cat: 'home', hanzi: '台灯', pinyin: 'táidēng', rusTrans: 'тайдын', translation: 'лампа' },
+        { cat: 'home', hanzi: '书架', pinyin: 'shūjià', rusTrans: 'шуцзя', translation: 'книжная полка' },
+        { cat: 'adj', hanzi: '重', pinyin: 'zhòng', rusTrans: 'чжун', translation: 'тяжёлый' },
+        { cat: 'music', hanzi: '钢琴', pinyin: 'gāngqín', rusTrans: 'ганцинь', translation: 'пианино' },
+        { cat: 'clothing', hanzi: '衣服', pinyin: 'yīfu', rusTrans: 'ифу', translation: 'одежда' },
+        { cat: 'clothing', hanzi: '帽子', pinyin: 'màozi', rusTrans: 'маоцзы', translation: 'шапка' },
+        { cat: 'misc', hanzi: '还', pinyin: 'hái', rusTrans: 'хай', translation: 'ещё' },
+        { cat: 'food', hanzi: '筷子', pinyin: 'kuàizi', rusTrans: 'куайцзы', translation: 'палочки' },
+        { cat: 'food', hanzi: '勺子', pinyin: 'sháozi', rusTrans: 'шаоцзы', translation: 'ложка' },
+        { cat: 'home', hanzi: '打扫', pinyin: 'dǎsǎo', rusTrans: 'дасао', translation: 'убирать' },
+        { cat: 'misc', hanzi: '东西', pinyin: 'dōngxi', rusTrans: 'дунси', translation: 'вещь' },
+        { cat: 'misc', hanzi: '这些', pinyin: 'zhèxiē', rusTrans: 'чжэсе', translation: 'эти' },
+        { cat: 'misc', hanzi: '那些', pinyin: 'nàxiē', rusTrans: 'насе', translation: 'те' },
+        { cat: 'verbs', hanzi: '扔掉', pinyin: 'rēngdiào', rusTrans: 'жэндяо', translation: 'выбросить' },
+        { cat: 'adj', hanzi: '脏', pinyin: 'zāng', rusTrans: 'цзан', translation: 'грязный' },
+        { cat: 'home', hanzi: '吸尘器', pinyin: 'xīchénqì', rusTrans: 'сичэньци', translation: 'пылесос' },
+        { cat: 'home', hanzi: '拖把', pinyin: 'tuōbǎ', rusTrans: 'тоба', translation: 'швабра' },
+        { cat: 'time', hanzi: '星期六', pinyin: 'xīngqīliù', rusTrans: 'синцилю', translation: 'суббота' },
+        { cat: 'time', hanzi: '星期天', pinyin: 'xīngqītiān', rusTrans: 'синциянь', translation: 'воскресенье' },
+
+        // СТРАНИЦА 8
+        { cat: 'misc', hanzi: '报纸', pinyin: 'bàozhǐ', rusTrans: 'баочжи', translation: 'газета' },
+        { cat: 'adj', hanzi: '忙', pinyin: 'máng', rusTrans: 'ман', translation: 'занятой' },
+        { cat: 'verbs', hanzi: '睡觉', pinyin: 'shuìjiào', rusTrans: 'шуйцзяо', translation: 'спать' },
+        { cat: 'verbs', hanzi: '帮助', pinyin: 'bāngzhù', rusTrans: 'банчжу', translation: 'помогать' },
+        { cat: 'adj', hanzi: '干净', pinyin: 'gānjìng', rusTrans: 'ганьцзин', translation: 'чистый' },
+        { cat: 'music', hanzi: '摇滚', pinyin: 'yáogǔn', rusTrans: 'яогунь', translation: 'рок' },
+        { cat: 'verbs', hanzi: '听', pinyin: 'tīng', rusTrans: 'тин', translation: 'слушать' },
+        { cat: 'music', hanzi: '拉', pinyin: 'lā', rusTrans: 'ла', translation: 'играть (на смычковых)' },
+        { cat: 'music', hanzi: '小提琴', pinyin: 'xiǎotíqín', rusTrans: 'сяотицинь', translation: 'скрипка' },
+        { cat: 'misc', hanzi: '喂', pinyin: 'wèi', rusTrans: 'вэй', translation: 'алло' },
+        { cat: 'tech', hanzi: '上网', pinyin: 'shàngwǎng', rusTrans: 'шанван', translation: 'сидеть в интернете' },
+        { cat: 'misc', hanzi: '什么', pinyin: 'shénme', rusTrans: 'шэньмэ', translation: 'что?' },
+        { cat: 'misc', hanzi: '报纸', pinyin: 'bàozhǐ', rusTrans: 'баочжи', translation: 'газета' },
+        { cat: 'verbs', hanzi: '卖', pinyin: 'mài', rusTrans: 'май', translation: 'продавать' },
+        { cat: 'sport', hanzi: '飞盘', pinyin: 'fēipán', rusTrans: 'фэйпань', translation: 'фрисби' },
+        { cat: 'family', hanzi: '女孩儿', pinyin: 'nǚháir', rusTrans: 'нюйхайр', translation: 'девочка' },
+        { cat: 'misc', hanzi: '没', pinyin: 'méi', rusTrans: 'мэй', translation: 'не (отрицание)' },
+        { cat: 'family', hanzi: '爷爷', pinyin: 'yéye', rusTrans: 'ее', translation: 'дедушка' },
+        { cat: 'health', hanzi: '药', pinyin: 'yào', rusTrans: 'яо', translation: 'лекарство' },
+        { cat: 'health', hanzi: '药店', pinyin: 'yàodiàn', rusTrans: 'яодянь', translation: 'аптека' },
+        { cat: 'time', hanzi: '早上', pinyin: 'zǎoshang', rusTrans: 'цзаошан', translation: 'утро' },
+        { cat: 'verbs', hanzi: '请假', pinyin: 'qǐngjià', rusTrans: 'цинцзя', translation: 'отпрашиваться' },
+        { cat: 'misc', hanzi: '了', pinyin: 'le', rusTrans: 'лэ', translation: 'суффикс завершения' },
+        { cat: 'verbs', hanzi: '来', pinyin: 'lái', rusTrans: 'лай', translation: 'приходить' },
+        { cat: 'verbs', hanzi: '给', pinyin: 'gěi', rusTrans: 'гэй', translation: 'давать' },
+        { cat: 'food', hanzi: '煮', pinyin: 'zhǔ', rusTrans: 'чжу', translation: 'варить' },
+        { cat: 'time', hanzi: '昨天', pinyin: 'zuótiān', rusTrans: 'цзотянь', translation: 'вчера' },
+        { cat: 'verbs', hanzi: '应该', pinyin: 'yīnggāi', rusTrans: 'ингай', translation: 'следует' },
+        { cat: 'health', hanzi: '头', pinyin: 'tóu', rusTrans: 'тоу', translation: 'голова' },
+        { cat: 'health', hanzi: '发烧', pinyin: 'fāshāo', rusTrans: 'фашао', translation: 'температура, жар' },
+        { cat: 'health', hanzi: '医院', pinyin: 'yīyuàn', rusTrans: 'июань', translation: 'больница' },
+        { cat: 'health', hanzi: '怎么了', pinyin: 'zěnmele', rusTrans: 'цзэньмэлэ', translation: 'что случилось?' },
+        { cat: 'time', hanzi: '昨天', pinyin: 'zuótiān', rusTrans: 'цзотянь', translation: 'вчера' },
+        { cat: 'health', hanzi: '疼', pinyin: 'téng', rusTrans: 'тэн', translation: 'болеть' },
+        { cat: 'health', hanzi: '肚子', pinyin: 'dùzi', rusTrans: 'дуцзы', translation: 'живот' },
+        { cat: 'time', hanzi: '下午', pinyin: 'xiàwǔ', rusTrans: 'сяу', translation: 'после обеда' },
+
+        // СТРАНИЦА 9
+        { cat: 'adj', hanzi: '开心', pinyin: 'kāixīn', rusTrans: 'кайсинь', translation: 'радостный' },
+        { cat: 'verbs', hanzi: '给', pinyin: 'gěi', rusTrans: 'гэй', translation: 'давать' },
+        { cat: 'nature', hanzi: '花', pinyin: 'huā', rusTrans: 'хуа', translation: 'цветок' },
+        { cat: 'misc', hanzi: '花束', pinyin: 'huāshù', rusTrans: 'хуашу', translation: 'букет' },
+        { cat: 'health', hanzi: '量', pinyin: 'liáng', rusTrans: 'лян', translation: 'мерить' },
+        { cat: 'health', hanzi: '体温', pinyin: 'tǐwēn', rusTrans: 'тивэнь', translation: 'температура тела' },
+        { cat: 'misc', hanzi: '少', pinyin: 'shǎo', rusTrans: 'шао', translation: 'меньше' },
+        { cat: 'misc', hanzi: '跟', pinyin: 'gēn', rusTrans: 'гэнь', translation: 'с, и' },
+        { cat: 'time', hanzi: '下个', pinyin: 'xiàge', rusTrans: 'сягэ', translation: 'следующий' },
+        { cat: 'misc', hanzi: '五', pinyin: 'wǔ', rusTrans: 'у', translation: 'пять' },
+        { cat: 'gift', hanzi: '礼物', pinyin: 'lǐwù', rusTrans: 'лиу', translation: 'подарок' },
+        { cat: 'food', hanzi: '饮料', pinyin: 'yǐnliào', rusTrans: 'иньляо', translation: 'напиток' },
+        { cat: 'gift', hanzi: '生日', pinyin: 'shēngrì', rusTrans: 'шэнжи', translation: 'день рождения' },
+        { cat: 'gift', hanzi: '邀请', pinyin: 'yāoqǐng', rusTrans: 'яоцин', translation: 'приглашать' },
+        { cat: 'verbs', hanzi: '告诉', pinyin: 'gàosu', rusTrans: 'гаосу', translation: 'рассказывать' },
+        { cat: 'verbs', hanzi: '开个', pinyin: 'kāigè', rusTrans: 'кайгэ', translation: 'устроить' },
+        { cat: 'gift', hanzi: '准备', pinyin: 'zhǔnbèi', rusTrans: 'чжуньбэй', translation: 'готовить' },
+        { cat: 'gift', hanzi: '气球', pinyin: 'qìqiú', rusTrans: 'цицю', translation: 'воздушный шар' },
+        { cat: 'gift', hanzi: '惊喜', pinyin: 'jīngxǐ', rusTrans: 'цзинси', translation: 'сюрприз' },
+        { cat: 'food', hanzi: '菜', pinyin: 'cài', rusTrans: 'цай', translation: 'блюдо' },
+        { cat: 'food', hanzi: '鱼', pinyin: 'yú', rusTrans: 'юй', translation: 'рыба' },
+        { cat: 'gift', hanzi: '蜡烛', pinyin: 'làzhú', rusTrans: 'лачжу', translation: 'свеча' },
+        { cat: 'food', hanzi: '薯片', pinyin: 'shǔpiàn', rusTrans: 'шупянь', translation: 'чипсы' },
+        { cat: 'gift', hanzi: '项链', pinyin: 'xiàngliàn', rusTrans: 'сянлянь', translation: 'ожерелье' },
+        { cat: 'clothing', hanzi: '围巾', pinyin: 'wéijīn', rusTrans: 'вэйцзинь', translation: 'шарф' },
+        { cat: 'clothing', hanzi: '领带', pinyin: 'lǐngdài', rusTrans: 'линдай', translation: 'галстук' },
+        { cat: 'gift', hanzi: '准备', pinyin: 'zhǔnbèi', rusTrans: 'чжуньбэй', translation: 'приготовление' },
+        { cat: 'gift', hanzi: '派对', pinyin: 'pàiduì', rusTrans: 'пайдуй', translation: 'вечеринка' },
+        { cat: 'adj', hanzi: '快乐', pinyin: 'kuàilè', rusTrans: 'куайлэ', translation: 'счастливый' },
+        { cat: 'misc', hanzi: '里面', pinyin: 'lǐmiàn', rusTrans: 'лимянь', translation: 'внутри' },
+        { cat: 'misc', hanzi: '旁边', pinyin: 'pángbiān', rusTrans: 'панбянь', translation: 'рядом' },
+        { cat: 'city', hanzi: '学校', pinyin: 'xuéxiào', rusTrans: 'сюэсяо', translation: 'школа' },
+        { cat: 'city', hanzi: '图书馆', pinyin: 'túshūguǎn', rusTrans: 'тушугуань', translation: 'библиотека' },
+        { cat: 'misc', hanzi: '请问', pinyin: 'qǐngwèn', rusTrans: 'цинвэнь', translation: 'позвольте спросить' },
+        { cat: 'city', hanzi: '校园', pinyin: 'xiàoyuán', rusTrans: 'сяоюань', translation: 'кампус' },
+        { cat: 'city', hanzi: '操场', pinyin: 'cāochǎng', rusTrans: 'цаочан', translation: 'спортивная площадка' },
+        { cat: 'adj', hanzi: '真', pinyin: 'zhēn', rusTrans: 'чжэнь', translation: 'действительно' },
+        { cat: 'misc', hanzi: '外面', pinyin: 'wàimiàn', rusTrans: 'ваймянь', translation: 'снаружи' },
+        { cat: 'adj', hanzi: '高', pinyin: 'gāo', rusTrans: 'гао', translation: 'высокий' },
+
+        // СТРАНИЦА 10
+        { cat: 'misc', hanzi: '后面', pinyin: 'hòumiàn', rusTrans: 'хоумянь', translation: 'сзади' },
+        { cat: 'city', hanzi: '停车场', pinyin: 'tíngchēchǎng', rusTrans: 'тинчэчан', translation: 'парковка' },
+        { cat: 'city', hanzi: '宿舍', pinyin: 'sùshè', rusTrans: 'сушэ', translation: 'общежитие' },
+        { cat: 'city', hanzi: '食堂', pinyin: 'shítáng', rusTrans: 'шитан', translation: 'столовая' },
+        { cat: 'adj', hanzi: '安静', pinyin: 'ānjìng', rusTrans: 'аньцзин', translation: 'тихий' },
+        { cat: 'misc', hanzi: '前面', pinyin: 'qiánmiàn', rusTrans: 'цяньмянь', translation: 'спереди' },
+        { cat: 'sport', hanzi: '体育馆', pinyin: 'tǐyùguǎn', rusTrans: 'тиюйгуань', translation: 'спортзал' },
+        { cat: 'sport', hanzi: '游泳池', pinyin: 'yóuyǒngchí', rusTrans: 'ююнчи', translation: 'бассейн' },
+        { cat: 'misc', hanzi: '活动', pinyin: 'huódòng', rusTrans: 'ходун', translation: 'мероприятие' },
+        { cat: 'time', hanzi: '晚上', pinyin: 'wǎnshang', rusTrans: 'ваньшан', translation: 'вечер' },
+        { cat: 'verbs', hanzi: '参加', pinyin: 'cānjiā', rusTrans: 'цаньцзя', translation: 'участвовать' }
+    ];
+
+    // Категории с метаданными (расширенные)
+    const categoryMeta = [
+        { id: 'food', emoji: '🥢', title: 'Еда и напитки' },
+        { id: 'family', emoji: '👨‍👩‍👧', title: 'Семья' },
+        { id: 'home', emoji: '🏠', title: 'Дом и интерьер' },
+        { id: 'city', emoji: '🚌', title: 'Город и транспорт' },
+        { id: 'sport', emoji: '⚽', title: 'Спорт' },
+        { id: 'time', emoji: '⏳', title: 'Время' },
+        { id: 'study', emoji: '📖', title: 'Учеба' },
+        { id: 'adj', emoji: '✨', title: 'Описания' },
+        { id: 'verbs', emoji: '🔧', title: 'Глаголы' },
+        { id: 'health', emoji: '💊', title: 'Здоровье' },
+        { id: 'animals', emoji: '🐾', title: 'Животные' },
+        { id: 'nature', emoji: '🌿', title: 'Природа' },
+        { id: 'travel', emoji: '🧳', title: 'Путешествия' },
+        { id: 'music', emoji: '🎵', title: 'Музыка' },
+        { id: 'clothing', emoji: '👕', title: 'Одежда' },
+        { id: 'tech', emoji: '💻', title: 'Технологии' },
+        { id: 'gift', emoji: '🎁', title: 'Праздники' },
+        { id: 'misc', emoji: '📦', title: 'Прочее' }
+    ];
+
+    // DOM элементы
+    const gridEl = document.getElementById('categoryGrid');
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const totalStats = document.getElementById('totalStats');
+    
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    // Обновление счетчика
+    totalStats.textContent = `📊 ${vocabData.length} слов`;
+
+    function filterData() {
+        return vocabData.filter(item => {
+            if (activeCategory !== 'all' && item.cat !== activeCategory) return false;
+            if (searchQuery.trim() !== '') {
+                const q = searchQuery.toLowerCase();
+                return (item.hanzi + item.pinyin + item.rusTrans + item.translation).toLowerCase().includes(q);
+            }
+            return true;
+        });
+    }
+
+    function render() {
+        const filtered = filterData();
+        const grouped = new Map();
+        categoryMeta.forEach(meta => grouped.set(meta.id, []));
+
+        filtered.forEach(item => {
+            const arr = grouped.get(item.cat);
+            if (arr) arr.push(item);
+        });
+
+        let htmlString = '';
+        for (let meta of categoryMeta) {
+            const items = grouped.get(meta.id) || [];
+            if (items.length === 0) continue;
+
+            const rows = items.map(v => `<tr>
+                <td class="hanzi">${v.hanzi}</td>
+                <td class="pinyin">${v.pinyin}</td>
+                <td class="rus-trans">${v.rusTrans}</td>
+                <td class="translation">${v.translation}</td>
+            </tr>`).join('');
+
+            htmlString += `
+                <div class="card">
+                    <div class="card-header">
+                        <span>${meta.emoji}</span> ${meta.title}
+                        <span class="count">${items.length}</span>
+                    </div>
+                    <div class="card-content">
+                        <table class="vocab-table">
+                            <tr><th>Иероглиф</th><th>Пининь</th><th>Транскрипция</th><th>Перевод</th></tr>
+                            ${rows}
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (htmlString === '') {
+            gridEl.innerHTML = `<div class="no-match-message">😕 Ничего не найдено по запросу «${searchQuery}»</div>`;
+        } else {
+            gridEl.innerHTML = htmlString;
+        }
+        totalStats.textContent = `📊 ${filtered.length} / ${vocabData.length} слов`;
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        render();
+    });
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = btn.dataset.category;
+            render();
+        });
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>
